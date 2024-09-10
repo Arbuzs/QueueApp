@@ -1,0 +1,151 @@
+/* Title Container */
+.title-container {
+    background-color: #b1e140;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 2px solid #ccc;
+}
+
+.formtitle-container {
+    background-color: transparent;
+    padding: 20px;
+    text-align: center;
+ 
+}
+.title-container h1 {
+    margin: 0;
+    font-size: 2em;
+    color: #333;
+}
+
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 100px;
+    margin-top: 100px;
+}
+
+/* Button Component */
+.button {
+   
+    width: 573px ;
+    height: 100%;
+    text-align: center;
+    justify-content: center; /* Center horizontally */
+    align-items: center; 
+    color: #000000;
+    background-color: #b1e140;
+    border: 10px;
+    border-radius: 30px;
+   
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.button2 {
+    padding: 10px 10px;
+    width: 573px;
+    height: 146px;
+    font-size: 1em;
+    color: #000000;
+    background-color: transparent;  /* Transparent background */
+    border: 1px solid #000000;  /* 1px black border */
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button2:hover {
+    background-color: rgba(0, 0, 0, 0.1);  /* Slightly visible on hover for better user feedback */
+}
+
+
+.button:hover {
+    background-color: #b1e140bd
+    ; 
+}
+
+.textbox{
+    background-color: transparent;  /* Transparent background */
+    border: 1px solid #000000;  /* 1px black border */
+}
+
+.form-container{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 100px;
+    margin-top: 100px;
+}
+
+.noticket-container{
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+  
+    gap: 100px;
+    margin-top: 100px;
+}
+
+/* Styles for the right data section */
+  /* Container for input and label */
+  .input-container {
+    position: relative;
+ /* Adjust width if needed */
+ width: 573px;
+ height: 100px;
+    margin: 20px 0;
+  }
+  
+  /* Input styles */
+  .focus-input {
+    width: 100%; /* Adjust to fit within the container */
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border: none;
+    font-size: 40px; /* Fixed the font-size property */
+    font-family: 'Helvetica';
+    font-weight: lighter; 
+    border: 1px solid #000000; /* Bottom border only */
+    border-radius: 30px;
+    background-color: rgba(53, 103, 107, 0); /* Transparent background */
+    transition: border-color 0.6s;
+  }
+  
+
+  
+  .focus-input::placeholder {
+    color: #000000; /* Color of the placeholder text */
+    opacity: 0.5;
+    font-size: 30px; /* Fixed the font-size property */
+    font-family: 'Syne';
+    font-weight: lighter; /* Removed quotes for the font-weight property */
+  }
+  
+  /* Placeholder text as label */
+  .input-label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    font-size: 30px;
+    font-family: 'Syne';
+    font-weight: lighter;
+    color: #000000;
+    opacity: 0.5;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: 0.2s ease all;
+  }
+  
+  /* Floating label effect */
+  .focus-input:focus ~ .input-label,
+  .focus-input:not(:placeholder-shown) ~ .input-label {
+    top:-14px;
+    right:-14px;
+    font-size: 25px;
+    color: #000000;
+    opacity: 1;
+    padding: 5px;
+  }
