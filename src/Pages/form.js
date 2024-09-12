@@ -66,7 +66,7 @@ function Form() {
                     <label className="input-label"> Ticket Number</label>
                 </div>
                 <button className="button" type='submit'>
-                    <p style={FONT.bold_50}>QUEUE UP</p>
+                    <p style={FONT.bold_50}>SUBMIT</p>
                 </button>
             </form>
         </div>
