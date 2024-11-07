@@ -1,0 +1,58 @@
+ /* QueueDisplay.css */
+ @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;700&display=swap");
+.queue-display-container{
+     font-family: Syne, sans-serif;
+     background-image: url("https://assets.vuepilot.com/uploads/3473/537-Open---TOBE_V2-1.jpg");
+     background-repeat: no-repeat;
+     background-size: 100% 100%;
+     display: flex;
+     justify-content: flex-start;
+     align-items: flex-start;
+     margin: 0;
+     padding: 0;
+     height: 100vh;
+     width: 100vw;
+ }
+ 
+ .container {
+     position: absolute;
+     top: 28.5%;
+     left: 6.5%;
+     width: 21.5%;
+     height: 53%;
+     text-align: center;
+     background-color: rgba(0, 0, 0, 1);
+     border-radius: 20px;
+     box-sizing: border-box;
+ }
+ 
+ .section h2 {
+     font-size: 2.5vh;
+     margin-bottom: 5px;
+     text-transform: uppercase;
+     color: white;
+ }
+ 
+ .queue-list {
+     list-style-type: none;
+     padding: 0;
+     margin: 0;
+ }
+ 
+ .queue-list li {
+     font-size: 5vh;
+     font-weight: bold;
+     margin-bottom: 5px;
+     text-transform: uppercase;
+     overflow-wrap: break-word;
+     max-height: calc(100% / 5);
+ }
+ 
+ .green-text {
+     color: #4CAF50;
+ }
+ 
+ .yellow-text {
+     color: #FFC107;
+ }
+ 
