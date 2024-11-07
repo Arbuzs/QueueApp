@@ -6,7 +6,7 @@ const passport = require('passport');
 const LDAPStrategy = require('passport-ldapauth').Strategy;
 const session = require('express-session');
 const app = express();
-const port = 3000;
+const port = 5000;
 
 app.use(bodyParser.json());
 app.use(cors());
