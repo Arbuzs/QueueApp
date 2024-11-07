@@ -3,6 +3,7 @@ import axios from 'axios';
 
 function QueueDisplay() {
     const [queue, setQueue] = useState([]);
+    const [resetting, setResetting] = useState(false);
 
     useEffect(() => {
         const fetchQueue = async () => {
@@ -38,6 +39,24 @@ function QueueDisplay() {
         }
     };
 
+    const resetQueue = async () => {
+        setResetting(true);
+        try {
+            const response = await axios.post('http://localhost:3000/api/reset');
+            if (response.data.success) {
+                setQueue([]);
+                alert("Queue reset successfully!");
+            } else {
+                alert("Failed to reset the queue.");
+            }
+        } catch (error) {
+            console.error("Error resetting queue:", error);
+            alert("Error resetting queue.");
+        } finally {
+            setResetting(false);
+        }
+    };
+
     const getStatus = (helping_now, served) => {
         if (helping_now) {
             return "Helping";
@@ -65,7 +84,6 @@ function QueueDisplay() {
             <table>
                 <thead>
                     <tr>
-                        <th>Queue Number</th>
                         <th>Time</th>
                         <th>Visitor Name</th>
                         <th>Ticket Number</th>
@@ -79,7 +97,6 @@ function QueueDisplay() {
                         const status = getStatus(item.helping_now, item.served);
                         return (
                             <tr key={item.id}>
-                                <td>{item.queue_number}</td>
                                 <td>{item.Time}</td>
                                 <td>{item.visitor_name}</td>
                                 <td>{item.ticket_number}</td>
@@ -95,6 +112,9 @@ function QueueDisplay() {
                     })}
                 </tbody>
             </table>
+            <button onClick={resetQueue} disabled={resetting} className="reset-button">
+                {resetting ? "Resetting..." : "Reset Queue"}
+            </button>
 
             {/* Adding some CSS styles */}
             <style jsx>{`
@@ -118,6 +138,19 @@ function QueueDisplay() {
                 }
                 th {
                     background-color: #f2f2f2;
+                }
+                .reset-button {
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    font-size: 16px;
+                    background-color: #f44336;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                }
+                .reset-button:disabled {
+                    background-color: #e57373;
+                    cursor: not-allowed;
                 }
             `}</style>
         </div>

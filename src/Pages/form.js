@@ -8,23 +8,48 @@ function Form() {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [ticketNumber, setTicketNumber] = useState('');
+    const [error, setError] = useState('');
+
+    const validateInput = (value) => {
+        const isValid = value.startsWith('INC') || value.startsWith('RITM');
+        if (!isValid) {
+            setError('Ticket number must start with INC or RITM');
+        } else {
+            setError('');
+        }
+        return isValid;
+    };
+
+    const handleNameChange = (e) => {
+        const { value } = e.target;
+        setName(value.toUpperCase());
+    };
+
+    const handleTicketNumberChange = (e) => {
+        const { value } = e.target;
+        setTicketNumber(value.toUpperCase());
+        validateInput(value.toUpperCase());
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        if (!validateInput(ticketNumber)) {
+            alert("Invalid ticket number. It must start with INC or RITM.");
+            return;
+        }
+
         const formData = {
             visitor_name: name,
             ticket_number: ticketNumber,
-            queue_number: Math.floor(Math.random() * 1000), // Or generate this number as needed
-            Time: new Date().toLocaleTimeString(),
-            helping_now: false,
-            served: false
+            Time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            helping_now: 0,
+            served: 0
         };
 
         try {
             const response = await axios.post('http://localhost:3000/api/queue', formData);
             if (response.status === 201) {
-                alert("Form submitted successfully!");
                 navigate("/thankyou");
             } else {
                 alert("Form submission failed.");
@@ -47,17 +72,18 @@ function Form() {
                         value={name}
                         className="focus-input"
                         placeholder=" "
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={handleNameChange}
                     />
                     <label className="input-label">First Name</label>
                 </div>
+                    {error && <div className="error-message">{error}</div>}
                 <div className='input-container'>
                     <input
                         type="text"
                         value={ticketNumber}
                         className="focus-input"
                         placeholder=" "
-                        onChange={(e) => setTicketNumber(e.target.value)}
+                        onChange={handleTicketNumberChange}
                     />
                     <label className="input-label">Ticket Number</label>
                 </div>
