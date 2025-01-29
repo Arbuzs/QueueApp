@@ -14,11 +14,11 @@ const LogIn = () => {
         </div>
         <div className = 'button-container'>
             <button className= 'button' onClick={() => navigate("/welcome")}>
-                <p style ={FONT.bold_40}>User version</p> 
+                <p style ={FONT.bold_40}>USER VERSION</p> 
                 </button>
             
-            <button className= 'button' onClick={() => navigate("/queuedisplay")}> <p style ={FONT.bold_40}>Queue Management</p> </button>
-            <button className= 'button' onClick={() => navigate("/reporting")}> <p style ={FONT.bold_40}>Reporting</p> </button>
+            <button className= 'button' onClick={() => navigate("/queuedisplay")}> <p style ={FONT.bold_40}>QUEUE TABLE</p> </button>
+            <button className= 'button' onClick={() => navigate("/reporting")}> <p style ={FONT.bold_40}>REPORTING</p> </button>
         
         </div>
         </div>

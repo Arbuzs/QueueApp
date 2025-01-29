@@ -12,10 +12,10 @@ app.use(bodyParser.json());
 app.use(cors());
 
 const config = {
-    server: 'dkcphbiodbc1_14.agc.jp',
-    user: 'sd_queue',
-    password: '!]r5LAK}8)pkQQRT>GzA5sho68~q%n',
-    database: 'queue_management',
+    server: process.env.DB_SERVER,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     options: {
         encrypt: true, // Use encryption if required
         trustServerCertificate: true // Allow self-signed certificates
@@ -42,20 +42,40 @@ app.get('/api/queue', async (req, res) => {
     }
 });
 
+// API to get statistics
+app.get('/api/statistic', async (req, res) => {
+    const { start_date, end_date } = req.query;
+    
+    let query = 'SELECT * FROM statistic';
+    
+    if (start_date && end_date) {
+        query += ` WHERE date BETWEEN '${start_date}' AND '${end_date}'`;
+    }
+
+    try {
+        const result = await sql.query(query);
+        res.send(result.recordset);
+    } catch (err) {
+        console.error('Error fetching statistics:', err);
+        res.status(500).send({ error: 'Error fetching statistics' });
+    }
+});
+
+
 // API to add a new entry to the queue
 app.post('/api/queue', async (req, res) => {
-    const { visitor_name, ticket_number, Time, helping_now, served } = req.body;
-    const sqlQuery = `INSERT INTO queue (visitor_name, ticket_number, Time, helping_now, served) 
-                      VALUES (@visitor_name, @ticket_number, @Time, @helping_now, @served)`;
+    const { visitor_name, ticket_number, Time, helping_now, served, analyst_name } = req.body;
+    const sqlQuery = `INSERT INTO queue (visitor_name, ticket_number, Time, helping_now, served, analyst_name) 
+                      VALUES (@visitor_name, @ticket_number, @Time, @helping_now, @served, @analyst_name)`;
 
     try {
         const request = new sql.Request();
         request.input('visitor_name', sql.NVarChar, visitor_name);
         request.input('ticket_number', sql.NVarChar, ticket_number);
-        // request.input('queue_number', sql.Int, queue_number);
         request.input('Time', sql.DateTime, Time);
         request.input('helping_now', sql.Bit, helping_now);
         request.input('served', sql.Bit, served);
+        request.input('analyst_name', sql.NVarChar, analyst_name); // Add analyst_name
         await request.query(sqlQuery);
         res.status(201).send({ success: true });
     } catch (err) {
@@ -67,13 +87,14 @@ app.post('/api/queue', async (req, res) => {
 // API to update queue status
 app.put('/api/queue/:id', async (req, res) => {
     const { id } = req.params;
-    const { helping_now, served } = req.body;
-    const sqlQuery = `UPDATE queue SET helping_now = @helping_now, served = @served WHERE id = @id`;
+    const { helping_now, served, analyst_name } = req.body;
+    const sqlQuery = `UPDATE queue SET helping_now = @helping_now, served = @served, analyst_name = @analyst_name WHERE id = @id`;
 
     try {
         const request = new sql.Request();
         request.input('helping_now', sql.Bit, helping_now);
         request.input('served', sql.Bit, served);
+        request.input('analyst_name', sql.NVarChar, analyst_name); // Add analyst_name
         request.input('id', sql.Int, id);
         await request.query(sqlQuery);
         res.send({ success: true });
@@ -87,30 +108,51 @@ app.put('/api/queue/:id', async (req, res) => {
 app.post('/api/reset', async (req, res) => {
     const currentDate = new Date();
     try {
-        const result = await sql.query('SELECT ticket_number FROM queue');
-        let ritmCount = 0;
-        let incCount = 0;
-        let noticket = 0; 
+        // Get the details of tickets for each analyst
+        const result = await sql.query(`
+            SELECT analyst_name, visitor_name, ticket_number
+            FROM queue
+        `);
 
-        result.recordset.forEach(row => {
-            if (row.ticket_number.startsWith('RITM')) ritmCount++;
-            if (row.ticket_number.startsWith('INC')) incCount++;
-            else noticket++;
-        });
-
-        const insertQuery = `INSERT INTO statistic (date, ritm_count, inc_count,noticket_count) VALUES (@date, @ritm_count, @inc_count, @noticket_count)`;
         const deleteQueueQuery = 'DELETE FROM queue';
         const deleteResponsesQuery = 'DELETE FROM responses';
 
-        const request = new sql.Request();
-        request.input('date', sql.DateTime, currentDate);
-        request.input('ritm_count', sql.Int, ritmCount);
-        request.input('inc_count', sql.Int, incCount);
-        request.input('noticket_count', sql.Int, noticket);
+        // Insert each record into the statistic table
+        const insertQuery = `
+            INSERT INTO statistic (date, ritm_count, inc_count, noticket_count, analyst_name, visitor_name, ticket_number)
+            VALUES (@date, @ritm_count, @inc_count, @noticket_count, @analyst_name, @visitor_name, @ticket_number)
+        `;
 
-        await request.query(insertQuery);
-        await request.query(deleteQueueQuery);
-        await request.query(deleteResponsesQuery);
+        for (const row of result.recordset) {
+            const { analyst_name, visitor_name, ticket_number } = row;
+
+            let ritmCount = 0;
+            let incCount = 0;
+            let noticketCount = 0;
+
+            if (ticket_number.startsWith('RITM')) {
+                ritmCount = 1;
+            } else if (ticket_number.startsWith('INC')) {
+                incCount = 1;
+            } else {
+                noticketCount = 1;
+            }
+
+            const request = new sql.Request();
+            request.input('date', sql.DateTime, currentDate);
+            request.input('ritm_count', sql.Int, ritmCount);
+            request.input('inc_count', sql.Int, incCount);
+            request.input('noticket_count', sql.Int, noticketCount);
+            request.input('analyst_name', sql.NVarChar, analyst_name);
+            request.input('visitor_name', sql.NVarChar, visitor_name);
+            request.input('ticket_number', sql.NVarChar, ticket_number);
+
+            await request.query(insertQuery);
+        }
+
+        // Clear the queue and responses for reset
+        await sql.query(deleteQueueQuery);
+        await sql.query(deleteResponsesQuery);
 
         res.send({ success: true });
     } catch (err) {
@@ -119,9 +161,11 @@ app.post('/api/reset', async (req, res) => {
     }
 });
 
+
+
 app.use(bodyParser.json());
 app.use(cors());
-app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: false , cookie: { secure: false }}));
+app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: false, cookie: { secure: false } }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -148,22 +192,27 @@ passport.deserializeUser(function(user, done) {
 });
 
 // API to log in using LDAP
-
-app.post('/api/login', passport.authenticate('ldapauth', { session: true }), (req, res) => {
-    res.json({ success: true, user: req.user });
+app.post('/api/login', (req, res, next) => {
+    passport.authenticate('ldapauth', { session: true }, (err, user, info) => {
+        if (err) {
+            console.error('Authentication error:', err);
+            return res.status(500).json({ success: false, message: 'Authentication error', error: err });
+        }
+        if (!user) {
+            console.warn('Authentication failed:', info.message);
+            return res.status(401).json({ success: false, message: 'Authentication failed', error: info.message });
+        }
+        req.logIn(user, (loginErr) => {
+            if (loginErr) {
+                console.error('Login error:', loginErr);
+                return res.status(500).json({ success: false, message: 'Login error', error: loginErr });
+            }
+            return res.json({ success: true, user: req.user });
+        });
+    })(req, res, next);
 });
-
-// API to get the queue
-
-app.get('/api/queue', (req, res) => {
-    db.query('SELECT * FROM queue', (err, results) => {
-        if (err) throw err;
-        res.send(results);
-    });
-});
-
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.listen(port,'0.0.0.0', () => {
+    console.log(`Server running on port http://0.0.0.0:${port}`);
 });

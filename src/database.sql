@@ -4,7 +4,8 @@ CREATE TABLE queue (
     ticket_number VARCHAR(255),
     Time VARCHAR(255),
     helping_now BIT DEFAULT (0),
-    served BIT DEFAULT (0));
+    served BIT DEFAULT (0)
+    analyst_name VARCHAR(255));
 
 CREATE TABLE statistic (
     id INT IDENTITY PRIMARY KEY,

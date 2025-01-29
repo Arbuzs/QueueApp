@@ -12,6 +12,8 @@ const COLORS = {
     grey: "#D9D9D9",
     white: '#FFFFFF',
     black: '#000000',
+    ritm: '#8884d8',
+    inc:'#82ca9d',
 };
 
 const FONT = {

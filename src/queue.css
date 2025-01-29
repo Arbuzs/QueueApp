@@ -24,6 +24,8 @@
     justify-content: center;
     gap: 100px;
     margin-top: 250px;
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 /* Button Component */
@@ -163,3 +165,16 @@
     opacity: 1;
     padding: 5px;
   }
+
+  .queue-container{
+    display: flex;
+    justify-content: top;
+    height: 100%;
+    flex-direction: column;
+  
+    align-items: center;
+    
+    margin-top: 5px;
+    padding-left: 20px;
+    padding-right:20px;
+}
