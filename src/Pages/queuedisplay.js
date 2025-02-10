@@ -15,8 +15,16 @@ function QueueDisplay() {
     useEffect(() => {
         const fetchQueue = async () => {
             try {
-                const response = await axios.get('http://10.84.140.132:3000/api/queue');
-                setQueue(response.data);
+                const response = await axios.get('api/queue');
+                const fetchedQueue = response.data;
+    
+                // Reorder the queue according to your custom rules
+                const helpingItems = fetchedQueue.filter(item => item.helping_now && !item.served);
+                const waitingItems = fetchedQueue.filter(item => !item.helping_now && !item.served);
+                const servedItems = fetchedQueue.filter(item => item.served);
+    
+                // Set the reordered queue
+                setQueue([...helpingItems, ...waitingItems, ...servedItems]);
             } catch (error) {
                 console.error("Error fetching queue:", error);
             }
@@ -24,32 +32,36 @@ function QueueDisplay() {
         fetchQueue();
         // Set up polling every 5 seconds to keep the table updated
         const intervalId = setInterval(fetchQueue, 5000);
-
+    
         // Clean up interval when the component unmounts
         return () => clearInterval(intervalId);
     }, []);
-
+    
+   
     const updateQueueStatus = async (id, helping_now, served, analyst_name) => {
         if (served) {
             helping_now = false; // Uncheck "Helping Now" when "Served" is checked
         }
         try {
-            await axios.put(`http://10.84.140.132:3000/api/queue/${id}`, { helping_now, served, analyst_name });
+            await axios.put(`api/queue/${id}`, { helping_now, served, analyst_name });
             setQueue(prevQueue => {
                 // Update the item
-                const updatedQueue = prevQueue.map(item => item.id === id ? { ...item, helping_now, served, analyst_name } : item);
-
+                const updatedQueue = prevQueue.map(item =>
+                    item.id === id ? { ...item, helping_now, served, analyst_name } : item
+                );
+    
                 // Reorder the queue
                 const helpingItems = updatedQueue.filter(item => item.helping_now && !item.served);
                 const waitingItems = updatedQueue.filter(item => !item.helping_now && !item.served);
                 const servedItems = updatedQueue.filter(item => item.served);
-
+    
                 return [...helpingItems, ...waitingItems, ...servedItems];
             });
         } catch (error) {
             console.error("Error updating queue status:", error);
         }
     };
+    
 
     const handleAnalystChange = (id, value) => {
         const item = queue.find(item => item.id === id);
@@ -59,7 +71,7 @@ function QueueDisplay() {
     const resetQueue = async () => {
         setResetting(true);
         try {
-            const response = await axios.post('http://10.84.140.132:3000/api/reset');
+            const response = await axios.post('api/reset');
             if (response.data.success) {
                 setQueue([]);
                 alert("Queue reset successfully!");

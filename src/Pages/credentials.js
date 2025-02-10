@@ -11,7 +11,7 @@ function Credentials({ onLogin }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://10.84.140.132:3000/api/login', { username, password });
+            const response = await axios.post('/api/login', { username, password });
             if (response.data.success) {
                 onLogin(response.data.user);
                 navigate('/queuedisplay');

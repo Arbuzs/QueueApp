@@ -48,7 +48,7 @@ function Form() {
         };
 
         try {
-            const response = await axios.post('http://10.84.140.132:3000/api/queue', formData);
+            const response = await axios.post('/api/queue', formData);
             if (response.status === 201) {
                 navigate("/thankyou");
             } else {

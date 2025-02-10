@@ -17,7 +17,7 @@ const StatisticsPage = () => {
         // Fetch statistics data from the backend API
         const fetchStatistics = async () => {
             try {
-                let url = 'http://10.84.140.132:3000/api/statistic';
+                let url = 'api/statistic';
                 if (startDate && endDate) {
                     const start = startDate.toISOString();
                     const end = endDate.toISOString();

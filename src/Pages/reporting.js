@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { COLORS, FONT } from '../Constants/theme.js';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,LabelList } from 'recharts';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import "../queue.css";
 
 const COLOR = {
-  ritm: '#8884d8',
-  inc: '#82ca9d',
-  no_ticket: '#ffc658'
+  ritm: '#e17840',
+  inc: '#4099e1',
+  no_ticket: '#e140a6'
 };
 
 const Reporting = () => {
@@ -21,11 +22,11 @@ const Reporting = () => {
   const [selectedAnalyst, setSelectedAnalyst] = useState('all');
   const [analystList, setAnalystList] = useState([]);
   const [analystDetails, setAnalystDetails] = useState([]);
-
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://10.84.140.132:3000/api/statistic');
+        const response = await axios.get('/api/statistic');
         console.log('Fetched data:', response.data);
         setData(response.data);
         setFilteredData(response.data); // Initialize filtered data
@@ -36,7 +37,7 @@ const Reporting = () => {
 
     const fetchAnalysts = async () => {
       try {
-        const response = await axios.get('http://10.84.140.132:3000/api/analysts');
+        const response = await axios.get('/api/analysts');
         setAnalystList(response.data);
       } catch (error) {
         console.error('Error fetching analysts:', error);
@@ -71,33 +72,44 @@ const Reporting = () => {
 
   const processData = (data, view) => {
     if (view === 'daily') {
-      return data;
+      return  data.map(item => ({
+        ...item,
+        date: item.date.split('T')[0] // Extract only the date part
+      }));;
     }
 
     const groupedData = {};
-    data.forEach(item => {
-      const date = new Date(item.date);
-      let key;
-      if (view === 'monthly') {
-        key = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      } else if (view === 'yearly') {
-        key = `${date.getFullYear()}`;
-      } else if (view === 'analyst') {
-        key = item.analyst_name;
-      }
+  data.forEach(item => {
+    const date = new Date(item.date);
+    let key;
+    if (view === 'monthly') {
+      key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    } else if (view === 'yearly') {
+      key = `${date.getFullYear()}`;
+    } else if (view === 'analyst') {
+      key = item.analyst_name;
+    }
 
-      if (!groupedData[key]) {
-        groupedData[key] = { date: key, ritm_count: 0, inc_count: 0, noticket_count: 0, analyst_name: item.analyst_name };
-      }
-      groupedData[key].ritm_count += item.ritm_count;
-      groupedData[key].inc_count += item.inc_count;
-      groupedData[key].noticket_count += item.noticket_count;
-    });
+    if (!groupedData[key]) {
+      groupedData[key] = { date: key, ritm_count: 0, inc_count: 0, noticket_count: 0, analyst_name: item.analyst_name };
+    }
+    groupedData[key].ritm_count += item.ritm_count;
+    groupedData[key].inc_count += item.inc_count;
+    groupedData[key].noticket_count += item.noticket_count;
+  });
 
-    return Object.values(groupedData);
-  };
+  return Object.values(groupedData);
+};
 
   const plotData = processData(filteredData, view);
+  const calculateTotalCount = (data) => {
+    return data.map(entry => ({
+      ...entry,
+      total_count: entry.ritm_count + entry.inc_count + entry.noticket_count
+    }));
+  };
+  
+  const updatedPlotData = calculateTotalCount(plotData);
 
   // Group filtered data by analyst name
   const groupByAnalyst = (data) => {
@@ -109,6 +121,7 @@ const Reporting = () => {
       acc[analyst_name].push(item);
       return acc;
     }, {});
+    
   };
 
   const groupedByAnalyst = groupByAnalyst(filteredData);
@@ -119,52 +132,73 @@ const Reporting = () => {
         <p style={FONT.bold_50}>Reports</p>
       </div>
       <div className="controls">
-        <div className="date-picker">
-          <DatePicker
-            selected={startDate}
-            onChange={date => setStartDate(date)}
-            selectsStart
-            startDate={startDate}
-            endDate={endDate}
-            placeholderText="Start Date"
-          />
-          <DatePicker
-            selected={endDate}
-            onChange={date => setEndDate(date)}
-            selectsEnd
-            startDate={startDate}
-            endDate={endDate}
-            minDate={startDate}
-            placeholderText="End Date"
-          />
-        </div>
+      <div className="date-picker-wrapper">
+          <div className="date-picker-container">
+            <label className="date-label">Start Date</label>
+            <DatePicker
+              selected={startDate}
+              onChange={date => setStartDate(date)}
+              selectsStart
+              startDate={startDate}
+              endDate={endDate}
+              placeholderText="Start Date"
+              className="date-picker-input"
+            />
+          </div>
+          <div className="date-picker-container">
+            <label className="date-label">End Date</label>
+            <DatePicker
+              selected={endDate}
+              onChange={date => setEndDate(date)}
+              selectsEnd
+              startDate={startDate}
+              endDate={endDate}
+              minDate={startDate}
+              placeholderText="End Date"
+              className="date-picker-input"
+            />
+          </div>
+
         <div className="view-buttons">
           <button onClick={() => handleViewChange('daily')}>Daily</button>
+        </div> 
+        <div className="view-buttons">
           <button onClick={() => handleViewChange('monthly')}>Monthly</button>
+        </div>
+        <div className="view-buttons">
           <button onClick={() => handleViewChange('yearly')}>Yearly</button>
+          </div>
+          <div className="view-buttons">
           <button onClick={() => handleViewChange('analyst')}>By Analyst</button>
         </div>
-        <div className="toggle-button">
-          <button onClick={() => setIsStacked(!isStacked)}>
-            {isStacked ? 'Switch to Grouped' : 'Switch to Stacked'}
-          </button>
-        </div>
+        <div className="view-buttons" >
+  <button onClick={() => setIsStacked(!isStacked)}
+      style={{ width: '250px' }}>
+    {isStacked ? 'Switch to Grouped' : 'Switch to Stacked'}
+  </button>
+</div>
       </div>
-      
-      <div className='chart-container'>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={plotData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="ritm_count" name="RITM Count" fill={COLOR.ritm} stackId={isStacked ? "a" : undefined} />
-            <Bar dataKey="inc_count" name="INC Count" fill={COLOR.inc} stackId={isStacked ? "a" : undefined} />
-            <Bar dataKey="noticket_count" name="No Ticket" fill={COLOR.no_ticket} stackId={isStacked ? "a" : undefined} />
-          </BarChart>
-        </ResponsiveContainer>
       </div>
+
+<div className='chart-container green-background'>
+  <ResponsiveContainer width="100%" height={400}>
+    <BarChart data={updatedPlotData}>
+      <XAxis dataKey="date" stroke="#000" />
+      <YAxis stroke="#000" />
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="ritm_count" name="RITM Count" fill={COLOR.ritm} stackId={isStacked ? "a" : undefined}>
+        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
+      </Bar>
+      <Bar dataKey="inc_count" name="INC Count" fill={COLOR.inc} stackId={isStacked ? "a" : undefined}>
+        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
+      </Bar>
+      <Bar dataKey="noticket_count" name="No Ticket" fill={COLOR.no_ticket} stackId={isStacked ? "a" : undefined}>
+        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
       {/* Analyst Table Section */}
       <div className="analyst-details">
@@ -205,14 +239,7 @@ const Reporting = () => {
           gap: 10px;
           margin-left: 20px;
         }
-        .view-buttons button, .toggle-button button {
-          margin: 0 5px;
-          padding: 10px 20px;
-          background-color: ${COLORS.black};
-          color: white;
-          border: none;
-          cursor: pointer;
-        }
+        
         .chart-container {
           margin: 20px;
         }

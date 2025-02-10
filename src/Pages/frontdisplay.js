@@ -9,7 +9,7 @@ const FrontDisplay = () => {
     useEffect(() => {
         const fetchQueue = async () => {
             try {
-                const response = await axios.get('http://10.84.140.132:3000/api/queue'); // Adjust the URL to your API endpoint
+                const response = await axios.get('/api/queue'); // Adjust the URL to your API endpoint
                 setQueue(response.data);
             } catch (error) {
                 console.error("Error fetching queue:", error);

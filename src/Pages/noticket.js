@@ -3,39 +3,57 @@ import { Flex, Progress } from "antd";
 import { COLORS, FONT } from "../Constants/theme.js";
 import "../queue.css";
 import {useNavigate} from "react-router-dom";
+import axios from "axios";
+
 
 function Noticket() {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [ticketNumber, setTicketNumber] = useState('');
+    const [error, setError] = useState('');
+
+    const validateInput = (value) => {
+        const isValid = true;
+        return isValid;
+    };
+
+    const handleNameChange = (e) => {
+        const { value } = e.target;
+        setName(value.toUpperCase());  
+    };
+
+    const handleTicketNumberChange = (e) => {
+        const { value } = e.target;
+        setTicketNumber(value.toUpperCase());
+        validateInput(value.toUpperCase());
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSdhnbXrn0w8y5yeNnXE9k-dY8H6hkV4P9etzS9u8JcCPpwFYg/formResponse";
-        const formData = new FormData();
-        formData.append("entry.1434050950", name); // Replace with the actual entry ID for "Your Name"
-        formData.append("entry.533996118", ticketNumber); // Replace with the actual entry ID for "Ticket Number"
+        if (!validateInput(ticketNumber)) {
+            alert("Invalid ticket number. It must start with INC or RITM.");
+            return;
+        }
 
-        const requestOptions = {
-            method: 'POST',
-            body: new URLSearchParams(formData),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+        const formData = {
+            visitor_name: name,
+            ticket_number: ticketNumber,
+            Time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            helping_now: 0,
+            served: 0
         };
 
         try {
-            const response = await fetch(formURL, requestOptions);
-            if (response.ok) {
-                alert("Form submitted successfully!");
-              
+            const response = await axios.post('/api/queue', formData);
+            if (response.status === 201) {
+                navigate("/thankyou");
             } else {
                 alert("Form submission failed.");
             }
         } catch (error) {
             console.error("Form submission error:", error);
-              navigate("/thankyou");
+            alert("Form submission error.");
         }
     };
 
@@ -51,19 +69,20 @@ function Noticket() {
                         value={name}
                         className="focus-input"
                         placeholder=" "
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={handleNameChange}
                     />
-                    <label className="input-label"> Name</label>
+                    <label className="input-label">First Name</label>
                 </div>
+                    {error && <div className="error-message">{error}</div>}
                 <div className='input-container'>
                     <input
                         type="text"
                         value={ticketNumber}
                         className="focus-input"
                         placeholder=" "
-                        onChange={(e) => setTicketNumber(e.target.value)}
+                        onChange={handleTicketNumberChange}
                     />
-                    <label className="input-label">Reason</label>
+                    <label className="input-label">Ticket Number</label>
                 </div>
                 <button className="button" type='submit'>
                     <p style={FONT.bold_50}>SUBMIT</p>
@@ -72,5 +91,4 @@ function Noticket() {
         </div>
     );
 }
-
 export default Noticket;

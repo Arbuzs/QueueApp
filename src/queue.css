@@ -178,3 +178,74 @@
     padding-left: 20px;
     padding-right:20px;
 }
+
+.date-picker-wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  padding-left: 40px;
+}
+
+.date-picker-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.date-label {
+  font-family: "Syne";
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.date-picker-input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #000000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.217);
+  width: 80%;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: #b1e140;
+}
+.view-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* Center the button horizontally */
+  margin-bottom: 10px; /* Space between buttons */
+}
+.view-buttons button, .toggle-button button {
+  margin: 5px;
+  padding: 5px 20px;
+  
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+ 
+  background-color: #b1e140;
+  border: none;
+  cursor: pointer;
+  border-radius: 20px; /* Rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.217); /* Shadow */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  width: 100%;
+}
+
+.view-buttons button:hover, .toggle-button button:hover {
+  opacity: 0.8; /* Transparent effect on hover */
+  box-shadow: 0 6px 10px rgba(33, 186, 69, 0.2); /* More prominent shadow on hover */
+}
+.view-buttons button.selected {
+  background-color: white;
+  color: black;
+  border: 2px solid black; /* Black border when selected */
+  box-shadow: none; /* Remove shadow to avoid overlapping effects */}
+
+  .green-background {
+    background-color: #b1e140;
+    margin: 20px;
+    border-radius: 20px; /* Adjust the value to your preference */
+    padding: 30px; /* Optional: Add some padding if needed */
+  }

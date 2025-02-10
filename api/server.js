@@ -6,7 +6,8 @@ const passport = require('passport');
 const LDAPStrategy = require('passport-ldapauth').Strategy;
 const session = require('express-session');
 const app = express();
-const port = 3000;
+const port = 5000;
+require('dotenv').config();
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -21,6 +22,8 @@ const config = {
         trustServerCertificate: true // Allow self-signed certificates
     }
 };
+
+
 
 // Connect to the database
 sql.connect(config, err => {
@@ -214,5 +217,5 @@ app.post('/api/login', (req, res, next) => {
 
 // Start the server
 app.listen(port,'0.0.0.0', () => {
-    console.log(`Server running on port http://0.0.0.0:${port}`);
+    console.log(`Server running on port https://0.0.0.0:${port}`);
 });
