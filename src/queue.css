@@ -182,28 +182,35 @@
 .date-picker-wrapper {
   display: flex;
   justify-content: space-between;
-  gap: 30px;
-  padding-left: 40px;
+  gap: 10px;
+  margin-left: 40px;
+  
+
+
 }
 
 .date-picker-container {
   display: flex;
   flex-direction: column;
   width: 100%;
+  margin-left: px;
+
 }
 
 .date-label {
   font-family: "Syne";
   font-weight: bold;
   margin-bottom: 5px;
+
 }
 
 .date-picker-input {
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 20px;
   border: 1px solid #000000;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.217);
   width: 80%;
+  
 }
 
 .date-picker-input:focus {
@@ -214,12 +221,13 @@
   width: 100%;
   display: flex;
   justify-content: center; /* Center the button horizontally */
-  margin-bottom: 10px; /* Space between buttons */
+  margin-bottom: 10px; 
+  /* Space between buttons */
 }
 .view-buttons button, .toggle-button button {
-  margin: 5px;
-  padding: 5px 20px;
   
+  padding: 0px 5px;
+  margin-left: 20px;
   font-family: 'Syne', sans-serif;
   font-size: 16px;
   font-weight: bold;

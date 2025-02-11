@@ -4,6 +4,7 @@ const cors = require('cors');
 const sql = require('mssql');
 const passport = require('passport');
 const LDAPStrategy = require('passport-ldapauth').Strategy;
+const cron = require('node-cron')
 const session = require('express-session');
 const app = express();
 const port = 5000;
@@ -11,6 +12,7 @@ require('dotenv').config();
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static("public"));
 
 const config = {
     server: process.env.DB_SERVER,
@@ -107,8 +109,20 @@ app.put('/api/queue/:id', async (req, res) => {
     }
 });
 
-// API to reset the queue daily
-app.post('/api/reset', async (req, res) => {
+
+// Schedule the reset job to run at midnight every day
+cron.schedule('0 0 * * *', async () => {
+    try {
+        console.log('Starting daily reset...');
+        await resetQueue(); // Call your reset queue function here
+        console.log('Queue reset completed.');
+    } catch (err) {
+        console.error('Error during scheduled reset:', err);
+    }
+});
+
+// Function to reset the queue (you can move the reset logic into this function)
+async function resetQueue() {
     const currentDate = new Date();
     try {
         // Get the details of tickets for each analyst
@@ -157,13 +171,10 @@ app.post('/api/reset', async (req, res) => {
         await sql.query(deleteQueueQuery);
         await sql.query(deleteResponsesQuery);
 
-        res.send({ success: true });
     } catch (err) {
         console.error('Error resetting data:', err);
-        res.status(500).send({ error: 'Error resetting data' });
     }
-});
-
+}
 
 
 app.use(bodyParser.json());

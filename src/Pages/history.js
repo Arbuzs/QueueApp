@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { COLORS } from "../Constants/theme.js";
 import { useNavigate } from 'react-router-dom';
 import arrowLeft from '../Assets/arrow-left.png';
+import HistoryTable from '../Components/HistoryTable.js';
+import "../queue.css";
 
 const StatisticsPage = () => {
     const navigate = useNavigate();
@@ -49,13 +50,21 @@ const StatisticsPage = () => {
     }
 
     return (
-        <div className='table-container'>
-            <button className="arrow-left" onClick={() => navigate(-1)}>
-                <img src={arrowLeft} alt="Arrow Left" />
-            </button>
-            <h1>History</h1>
-            <div className="controls">
-                <div className="date-picker">
+       <div>
+       
+          <div className="controls" style={{paddingTop:"60px"}}>
+            <div className='date-picker-wrapper' style={{gap:"20px"}}>
+                <div className="date-picker-container"> 
+                    <div className='view-buttons'style={{width:"70px"}}>`
+                    <button className="arrow-left"   onClick={() => navigate(-1)}>
+                    <img style={{ width: '40px', height: '40px', padding:"10px"
+
+                     }} src={arrowLeft} alt="Arrow Left" />
+                    </button>
+                    </div>
+                </div>
+                <div className='date-picker-container' style={{marginTop:"20px"}}>
+                    <div className="date-label">
                     <label>Start Date:</label>
                     <DatePicker
                         selected={startDate}
@@ -64,7 +73,12 @@ const StatisticsPage = () => {
                         startDate={startDate}
                         endDate={endDate}
                         dateFormat="yyyy-MM-dd"
-                    />
+                        className='date-picker-input'
+                        />
+                    </div>
+                </div>    
+                <div className='date-picker-container'  style={{marginTop:"20px"}}>
+                <div className="date-label">
                     <label>End Date:</label>
                     <DatePicker
                         selected={endDate}
@@ -74,94 +88,25 @@ const StatisticsPage = () => {
                         endDate={endDate}
                         minDate={startDate}
                         dateFormat="yyyy-MM-dd"
-                    />
+                        className='date-picker-input'
+                        />
                 </div>
-                <button className="preset-button" onClick={setLastSevenDays}>
-                    Last 7 Days
+                </div>
+                <div className='view-buttons' style={{width:"60%", paddingRight:"60px"}}>
+                <button  onClick={setLastSevenDays}>
+                Last 7 Days
                 </button>
-            </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Analyst Name</th>
-                        <th>Visitor Name</th>
-                        <th>Date</th>
-                        <th>Ticket Number</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {statistics.map((stat, index) => (
-                        <tr key={index}>
-                            <td>{stat.analyst_name}</td>
-                            <td>{stat.visitor_name}</td>
-                            <td>{new Date(stat.date).toLocaleDateString()}</td>
-                            <td>
-                                <a href={`https://agcbio.service-now.com/now/nav/ui/search/${stat.ticket_number}/params/search-term/${stat.ticket_number}/global-search-data-config-id/c861cea2c7022010099a308dc7c26041/back-button-label/Tasks/search-context/now%2Fnav%2Fui`} target="_blank" rel="noopener noreferrer">
-                                    {stat.ticket_number}
-                                </a>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <style jsx>{`
-                .title-container {
-                    margin-bottom: 20px;
-                }
-                .controls {
-                    display: flex;
-                    justify-content: space-between;
-                    margin: 20px;
-                }
-                .date-picker {
-                    display: flex;
-                    gap: 10px;
-                    margin-left: 20px;
-                }
-                .preset-button {
-                    align-self: flex-end;
-                    margin-left: 20px;
-                    padding: 5px 10px;
-                    background-color: ${COLORS.black};
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    border-radius: 5px;
-                }
-                .table-container {
-                    margin: 20px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                th, td {
-                    border: 1px solid ${COLORS.grey};
-                    padding: 10px;
-                    text-align: left;
-                }
-                th {
-                    background-color: ${COLORS.black};
-                    color: white;
-                }
-                .arrow-left {
-                    margin-top: 40px;
-                    align-items: center;
-                    font-size: 16px;
-                    font-family: 'Syne';
-                    background-color: transparent;
-                    border: none;
-                    cursor: pointer;
-                }
-                .arrow-left img {
-                    width: 40px;
-                    height: 40px;
-                }
-            `}</style>
+                </div>
+                </div>
+          
+          </div>
+         
+       <div className="table-container">
+          <HistoryTable statistics={statistics} />
+                </div>
+        
         </div>
-    );
-};
+      );}
 
 export default StatisticsPage;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FONT } from "../Constants/theme.js";
@@ -48,7 +49,7 @@ function Form() {
         };
 
         try {
-            const response = await axios.post('/api/queue', formData);
+            const response = await axios.post('http://localhost:5000/api/queue', formData);
             if (response.status === 201) {
                 navigate("/thankyou");
             } else {

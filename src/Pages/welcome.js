@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Flex, Progress } from "antd";
-import { COLORS, FONT } from "../Constants/theme.js";
+
+import {  FONT } from "../Constants/theme.js";
 import "../queue.css";
 import {useNavigate} from "react-router-dom";
-
+import React from "react";
 const Welcome = () => {
     const navigate = useNavigate(); 
     return ( 

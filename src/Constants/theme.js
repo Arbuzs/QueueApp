@@ -3,7 +3,7 @@ import '@fontsource/syne';
 const COLORS = {
     mainText_1: '#000000',
     primary_1: '#7FB7BC',
-    primary_2: '#2E858D',
+    primary_2: '#b1e140',
     gradient_1: '#44CE1B',
     gradient_2: '#BBDB44',
     gradient_3: '#F7E379',

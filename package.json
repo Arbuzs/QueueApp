@@ -16,9 +16,12 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
+    "file-loader": "^6.2.0",
+    "framer-motion": "^12.4.2",
     "ldapjs": "^3.0.7",
     "mssql": "^11.0.1",
     "mysql": "^2.18.1",
+    "node-cron": "^3.0.3",
     "nth-check": "^2.1.1",
     "passport": "^0.7.0",
     "passport-ldapauth": "^3.0.1",
@@ -27,7 +30,7 @@
     "react-csv": "^2.2.2",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.1",
+    "react-router-dom": "^6.29.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.14.1",
     "web-vitals": "^2.1.4"
@@ -38,8 +41,9 @@
   },
   "scripts": {
     "start": "concurrently \"npm run start-react\" \"npm run start-server\"",
-    "start-react": "react-scripts start",
-    "start-server": "node api/server.js"
+    "start-react": "webpack-dev-server --config webpack.config.js --mode development",
+    "start-server": "node api/server.js",
+      "build": "webpack --config webpack.config.js --mode production"
   },
   "eslintConfig": {
     "extends": [
@@ -66,6 +70,15 @@
   "license": "ISC",
   "proxy": "http://localhost:5000",
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@babel/core": "^7.26.8",
+    "@babel/preset-env": "^7.26.8",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^9.2.1",
+    "concurrently": "^9.1.2",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
   }
 }

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../queue.css";
-import { FONT } from "../Constants/theme.js";
 import historyButton from '../Assets/history_button.png'; // Import the image
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from "framer-motion";
 
-const analystOptions = ['Liviu', 'Iqbal', 'Haris', 'Cristian C', 'Amalie', 'Dimitrios', 'Kledi' , 'Olga' , 'Mona', 'Sigurdur' ]; // Analyst names
+const analystOptions = ['Liviu', 'Iqbal', 'Haris', 'Leo', 'Amalie', 'Dimitrios', 'Kledi' , 'Olga' , 'Mona', 'Sigurdur' ,'Arif']; // Analyst names
 
 function QueueDisplay() {
     const navigate = useNavigate();
     const [queue, setQueue] = useState([]);
-    const [resetting, setResetting] = useState(false);
+
 
     useEffect(() => {
         const fetchQueue = async () => {
@@ -18,24 +18,29 @@ function QueueDisplay() {
                 const response = await axios.get('api/queue');
                 const fetchedQueue = response.data;
     
-                // Reorder the queue according to your custom rules
-                const helpingItems = fetchedQueue.filter(item => item.helping_now && !item.served);
-                const waitingItems = fetchedQueue.filter(item => !item.helping_now && !item.served);
-                const servedItems = fetchedQueue.filter(item => item.served);
+                setQueue((prevQueue) => {
+                    // Create a mapping of old positions
+                    const positionMap = new Map(prevQueue.map((item, index) => [item.id, index]));
     
-                // Set the reordered queue
-                setQueue([...helpingItems, ...waitingItems, ...servedItems]);
+                    // Keep previous order for existing items, add new ones at the end
+                    const sortedQueue = fetchedQueue.sort((a, b) => {
+                        if (a.served !== b.served) return a.served ? 1 : -1; // Only move "Served" items to the bottom
+                        return (positionMap.get(a.id) ?? Infinity) - (positionMap.get(b.id) ?? Infinity);
+                    });
+    
+                    return [...sortedQueue];
+                });
             } catch (error) {
                 console.error("Error fetching queue:", error);
             }
         };
+    
         fetchQueue();
-        // Set up polling every 5 seconds to keep the table updated
         const intervalId = setInterval(fetchQueue, 5000);
     
-        // Clean up interval when the component unmounts
         return () => clearInterval(intervalId);
     }, []);
+    
     
    
     const updateQueueStatus = async (id, helping_now, served, analyst_name) => {
@@ -68,23 +73,7 @@ function QueueDisplay() {
         updateQueueStatus(id, item.helping_now, item.served, value);
     };
 
-    const resetQueue = async () => {
-        setResetting(true);
-        try {
-            const response = await axios.post('api/reset');
-            if (response.data.success) {
-                setQueue([]);
-                alert("Queue reset successfully!");
-            } else {
-                alert("Failed to reset the queue.");
-            }
-        } catch (error) {
-            console.error("Error resetting queue:", error);
-            alert("Error resetting queue.");
-        } finally {
-            setResetting(false);
-        }
-    };
+  
 
     const getStatus = (helping_now, served) => {
         if (helping_now) {
@@ -112,139 +101,211 @@ function QueueDisplay() {
             <table>
                 <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Visitor Name</th>
-                        <th>Ticket Number / Reason</th>
-                        <th>Helping Now</th>
-                        <th>Served</th>
-                        <th>Status</th>
-                        <th>Analyst Name</th> {/* Add a column for Analyst Name */}
+                        <th>TIME</th>
+                        <th>VISITOR NAME</th>
+                        <th>TICKET NUMBER/ REASON</th>
+                        <th>HELPING NOW</th>
+                        <th>SERVED</th>
+                        <th>STATUS</th>
+                        <th>ANALYST NAME</th> {/* Add a column for Analyst Name */}
                     </tr>
                 </thead>
                 <tbody>
-                    {queue.map(item => {
-                        const status = getStatus(item.helping_now, item.served);
-                        return (
-                            <tr key={item.id}>
-                                <td>{item.Time}</td>
-                                <td>{item.visitor_name}</td>
-                                <td>
-                                    <a href={`https://agcbio.service-now.com/now/nav/ui/search/${item.ticket_number}/params/search-term/${item.ticket_number}/global-search-data-config-id/c861cea2c7022010099a308dc7c26041/back-button-label/Tasks/search-context/now%2Fnav%2Fui`} target="_blank" rel="noopener noreferrer">
-                                        {item.ticket_number}
-                                    </a>
-                                </td>
-                                <td>
-                                    <input type="checkbox" className='big-checkbox' checked={item.helping_now} onChange={() => updateQueueStatus(item.id, !item.helping_now, item.served, item.analyst_name)} />
-                                </td>
-                                <td>
-                                    <input type="checkbox" className='big-checkbox' checked={item.served} onChange={() => updateQueueStatus(item.id, item.helping_now, !item.served, item.analyst_name)} />
-                                </td>
-                                <td className={getStatusClass(status)}>{status}</td>
-                                <td>
-                                    <select value={item.analyst_name || ''} onChange={(e) => handleAnalystChange(item.id, e.target.value)}>
-                                        <option value="">Select Analyst</option>
-                                        {analystOptions.map((analyst, index) => (
-                                            <option key={index} value={analyst}>{analyst}</option>
-                                        ))}
-                                    </select>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
+  <AnimatePresence>
+    {queue.map((item) => {
+      const status = getStatus(item.helping_now, item.served);
+
+      return (
+        <motion.tr
+          key={item.id}
+          layout // Enables smooth reordering
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+        >
+   <td>
+  {item.Time.slice(-7)}
+</td>
+
+
+
+          <td>{item.visitor_name}</td>
+          <td>
+            <a
+              href={`https://agcbio.service-now.com/now/nav/ui/search/${item.ticket_number}/params/search-term/${item.ticket_number}/global-search-data-config-id/c861cea2c7022010099a308dc7c26041/back-button-label/Tasks/search-context/now%2Fnav%2Fui`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.ticket_number}
+            </a>
+          </td>
+          <td>
+            <input
+              type="checkbox"
+              className="big-checkbox"
+              checked={item.helping_now}
+              onChange={() =>
+                updateQueueStatus(item.id, !item.helping_now, item.served, item.analyst_name)
+              }
+            />
+          </td>
+          <td>
+            <input
+              type="checkbox"
+              className="big-checkbox"
+              checked={item.served}
+              onChange={() =>
+                updateQueueStatus(item.id, item.helping_now, !item.served, item.analyst_name)
+              }
+            />
+          </td>
+          <td className={getStatusClass(status)}>{status}</td>
+          <td>
+            <select value={item.analyst_name || ""} onChange={(e) => handleAnalystChange(item.id, e.target.value)}>
+              <option value="">Select Analyst</option>
+              {analystOptions.map((analyst, index) => (
+                <option key={index} value={analyst}>
+                  {analyst}
+                </option>
+              ))}
+            </select>
+          </td>
+        </motion.tr>
+      );
+    })}
+  </AnimatePresence>
+</tbody>
+
+
             </table>
-            {/*
-             <button onClick={resetQueue} disabled={resetting} className="reset-button">
-                {resetting ? "Resetting..." : " Reset Queue"}
-            </button>
-           */}
 
             {/* Add a button with the image */}
-          
-            <button className="history-button" onClick={() => navigate("/history")}>
+            <div className='view-buttons' style= {{ width:"130px", }}>
+
+            <button className="history-button" style= {{  padding:"10px"}}onClick={() => navigate("/history")}>
               History   <img src={historyButton} alt="History Button" />
             </button>
+            </div>
             
 
             {/* Adding some CSS styles */}
             <style jsx>{`
-                .helping-status {
-                    color: green;
-                    font-size: 20px;
-                    font-family: 'Syne';
-                    font-weight: bold;
-                }
-                .served-status {
-                    color: blue;
-                    font-size: 20px;
-                    font-family: 'Syne';
-                    font-weight: bold;
-                }
-                .waiting-status {
-                    color: orange;
-                    font-size: 20px;
-                    font-family: 'Syne';
-                    font-weight: bold;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                th {
-                    padding-top: 12px;
-                    padding-bottom: 12px;
-                    text-align: center;
-                    background-color: #04AA6D;
-                    color: white;
-                }
-                td {
-                    text-align: center;
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                }
-                tr:nth-child(even) {
-                    background-color: #e3e2e2; 
-                }
-                .big-checkbox {
-                    width: 20px; /* Adjust the width as needed */
-                    height: 20px; /* Adjust the height as needed */
-                    transform: scale(1.5); /* Scale the checkbox up to 1.5 times its original size */
-                    margin: 5px; /* Optional: Add some margin for better spacing */
-                }
-                .reset-button {
-                    margin-top: 20px;
-                    padding: 10px 20px;
-                    font-size: 16px;
-                    background-color: #f44336;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                }
-                .reset-button:disabled {
-                    background-color: #e57373;
-                    cursor: not-allowed;
-                }
-                select {
-                    padding: 5px;
-                    font-size: 16px;
-                }
-              .history-button  {
-              margin-top:40px;
-                      display: flex;
-                        align-items: center;
-        font-size: 16px;
-        font-family: 'Syne';
-         background-color: transparent;
-                    border: none;
-                    cursor:pointer;
-
+    table {
+        margin-top:30px;
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 20px;
+        overflow: hidden; /* Ensures rounded corners apply properly */
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
     }
-                .history-button img {
-                padding-left:5px;
-                    width: 20px; /* Adjust the size as needed */
-                    height: 20px; /* Adjust the size as needed */
-                }
-            `}</style>
+
+    th {
+        padding: 12px;
+        text-align: center;
+        background-color: rgba(177,225,64);
+        color: black; /* Column headers are now black */
+
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
+    }
+
+    td {
+        text-align: center;
+        border: 1px solid #ddd;
+        padding: 8px;
+   
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
+    }
+
+    /* Remove borders from the top row */
+    tr:first-child td {
+        border-top: none;
+    }
+
+    /* Alternate row colors */
+    tr:nth-child(odd) {
+        background-color: rgba(177,225,64, 0.5); /* Semi-transparent green */
+    }
+
+    tr:nth-child(even) {
+        background-color: rgba(177,225,64, 0.5); /* Solid green */
+    }
+
+    .big-checkbox {
+        width: 18px; /* Reduced size */
+        height: 18px; /* Reduced size */
+        transform: scale(1.2); /* Slightly smaller than before */
+        margin: 5px;
+        accent-color: black; /* Ensures checkboxes are black and white */
+    }
+
+    .helping-status {
+        color: green;
+        font-size: 20px;
+        font-family: 'Syne'; /* Changed to Manrope */
+        font-weight: bold;
+    }
+
+    .served-status {
+        color: blue;
+        font-size: 20px;
+        font-family: 'Syne'; /* Changed to Manrope */
+        font-weight: bold;
+    }
+
+    .waiting-status {
+        color: orange;
+        font-size: 20px;
+        font-family: 'Syne'; /* Changed to Manrope */
+        font-weight: bold;
+    }
+
+    /* Style ticket number links */
+    td a {
+        color: black;
+        text-decoration: underline;
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
+    }
+
+    /* Updated select styling */
+    select {
+        padding: 6px;
+        font-size: 16px;
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
+         /* Made it bold */
+        background-color: rgba(177,225,64, 0.5); /* Blends with table */
+        color: black;
+        
+        border-radius: 10px;
+        outline: none;
+        cursor: pointer;
+        text-align: center;
+    }
+
+    /* Optional: Darken dropdown on hover */
+    select:hover {
+        background-color: rgba(177,225,64, 0.7);
+    }
+
+    .history-button {
+        margin-top: 40px;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        font-family: 'Manrope', sans-serif; /* Changed to Manrope */
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .history-button img {
+        padding-left: 5px;
+        width: 20px;
+        height: 20px;
+    }
+`}</style>
+
+
         </div>
     );
 }

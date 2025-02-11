@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { COLORS, FONT } from '../Constants/theme.js';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,LabelList } from 'recharts';
+import { FONT } from '../Constants/theme.js';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,LabelList } from 'recharts';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../queue.css";
+import HistoryTable from "../Components/HistoryTable.js";
+
 
 const COLOR = {
   ritm: '#e17840',
@@ -19,10 +21,9 @@ const Reporting = () => {
   const [endDate, setEndDate] = useState(null);
   const [view, setView] = useState('daily');
   const [isStacked, setIsStacked] = useState(true);
-  const [selectedAnalyst, setSelectedAnalyst] = useState('all');
-  const [analystList, setAnalystList] = useState([]);
-  const [analystDetails, setAnalystDetails] = useState([]);
-  
+  const [selectedAnalyst] = useState('all');
+  const [ setAnalystList] = useState([]);
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -43,11 +44,32 @@ const Reporting = () => {
         console.error('Error fetching analysts:', error);
       }
     };
-
+   
     fetchData();
     fetchAnalysts();
   }, []);
-
+  const exportToCSV = () => {
+    if (filteredData.length === 0) {
+      alert("No data available for export.");
+      return;
+    }
+  
+    const csvHeader = ["Date,Analyst Name,RITM Count,INC Count,No Ticket Count"];
+    const csvRows = filteredData.map(item => 
+      `${item.date},${item.analyst_name},${item.ritm_count},${item.inc_count},${item.noticket_count}`
+    );
+  
+    const csvContent = [csvHeader, ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+  
+    link.href = url;
+    link.download = `report_${startDate ? startDate.toISOString().split('T')[0] : "all"}_to_${endDate ? endDate.toISOString().split('T')[0] : "all"}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   useEffect(() => {
     const filterData = () => {
       let filtered = data;
@@ -141,8 +163,9 @@ const Reporting = () => {
               selectsStart
               startDate={startDate}
               endDate={endDate}
-              placeholderText="Start Date"
+              placeholderText="DD/MM/YYYY"
               className="date-picker-input"
+              popperPlacement="bottom-start"
             />
           </div>
           <div className="date-picker-container">
@@ -154,8 +177,10 @@ const Reporting = () => {
               startDate={startDate}
               endDate={endDate}
               minDate={startDate}
-              placeholderText="End Date"
+              placeholderText="DD/MM/YYYY"
               className="date-picker-input"
+              popperPlacement="bottom-start"
+              popperClassName="custom-datepicker"
             />
           </div>
 
@@ -173,10 +198,14 @@ const Reporting = () => {
         </div>
         <div className="view-buttons" >
   <button onClick={() => setIsStacked(!isStacked)}
-      style={{ width: '250px' }}>
+      style={{ width: '130px' }}>
     {isStacked ? 'Switch to Grouped' : 'Switch to Stacked'}
   </button>
 </div>
+<div className="view-buttons">
+  <button onClick={exportToCSV} style={{ width: '200px' }}>Export Ticket count Data </button>
+</div>
+
       </div>
       </div>
 
@@ -188,42 +217,43 @@ const Reporting = () => {
       <Tooltip />
       <Legend />
       <Bar dataKey="ritm_count" name="RITM Count" fill={COLOR.ritm} stackId={isStacked ? "a" : undefined}>
-        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
-      </Bar>
-      <Bar dataKey="inc_count" name="INC Count" fill={COLOR.inc} stackId={isStacked ? "a" : undefined}>
-        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
-      </Bar>
-      <Bar dataKey="noticket_count" name="No Ticket" fill={COLOR.no_ticket} stackId={isStacked ? "a" : undefined}>
-        <LabelList dataKey="total_count" position="top" style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }} />
-      </Bar>
+  {isStacked && (
+    <LabelList
+      dataKey="total_count"
+      position="top"
+      style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }}
+    />
+  )}
+</Bar>
+<Bar dataKey="inc_count" name="INC Count" fill={COLOR.inc} stackId={isStacked ? "a" : undefined}>
+  {isStacked && (
+    <LabelList
+      dataKey="total_count"
+      position="top"
+      style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }}
+    />
+  )}
+</Bar>
+<Bar dataKey="noticket_count" name="No Ticket" fill={COLOR.no_ticket} stackId={isStacked ? "a" : undefined}>
+  {isStacked && (
+    <LabelList
+      dataKey="total_count"
+      position="top"
+      style={{ fill: '#000', fontFamily: 'Syne', fontSize: '16px', fontWeight: 'bold' }}
+    />
+  )}
+</Bar>
     </BarChart>
   </ResponsiveContainer>
 </div>
 
-      {/* Analyst Table Section */}
-      <div className="analyst-details">
-        <h2>Analyst Details</h2>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Analyst Name</th>
-                <th>Visitor Name</th>
-                <th>Ticket Number</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.analyst_name}</td>
-                  <td>{item.visitor_name}</td>
-                  <td>{item.ticket_number}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+<div>
+   
+
+    {/* Add HistoryTable below the reporting chart */}
+    <HistoryTable statistics={filteredData} />
+  </div>
+
 
       <style jsx>{`
         .title-container {
@@ -232,7 +262,7 @@ const Reporting = () => {
         .controls {
           display: flex;
           justify-content: space-between;
-          margin: 20px;
+          margin: 10px;
         }
         .date-picker {
           display: flex;
@@ -246,21 +276,9 @@ const Reporting = () => {
         .analyst-details {
           margin: 20px;
         }
-        .table-container {
-          margin: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        th, td {
-          border: 1px solid ${COLORS.grey};
-          padding: 10px;
-          text-align: left;
-        }
-        th {
-          background-color: ${COLORS.black};
-          color: white;
+      
+      
+      
         }
       `}</style>
     </div>

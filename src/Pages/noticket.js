@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Flex, Progress } from "antd";
-import { COLORS, FONT } from "../Constants/theme.js";
+import React, {  useState } from "react";
+import {  FONT } from "../Constants/theme.js";
 import "../queue.css";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
@@ -10,7 +9,7 @@ function Noticket() {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [ticketNumber, setTicketNumber] = useState('');
-    const [error, setError] = useState('');
+    const [error] = useState('');
 
     const validateInput = (value) => {
         const isValid = true;
